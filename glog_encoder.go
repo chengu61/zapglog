@@ -3,6 +3,7 @@ package zapglog
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"go.uber.org/zap"
@@ -170,15 +171,20 @@ func (enc glogEncoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*
 	buf.AppendString(ent.Caller.TrimmedPath())
 	buf.AppendString("] ")
 	buf.AppendString(ent.Message)
-	buf.AppendByte('\t')
 
-	json, _ := enc.internal.EncodeEntry(ent, fields)
-	buf.AppendString(json.String())
-	json.Free()
+	if len(fields) > 0 {
+		buf.AppendByte('\t')
+		json, _ := enc.internal.EncodeEntry(ent, fields)
+		buf.AppendString(strings.TrimSpace(json.String()))
+		json.Free()
+	}
 
 	if ent.Stack != "" && enc.StacktraceKey != "" {
+		buf.AppendByte('\n')
 		buf.AppendString(ent.Stack)
 	}
+
+	buf.AppendString(enc.LineEnding)
 
 	return buf, nil
 }
