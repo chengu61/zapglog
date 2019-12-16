@@ -36,7 +36,12 @@ func DisableVerbosityHook() {
 
 func SetVerbosity(level Level) { g.verbosity.set(level) }
 
-func SetLogger(logger *zap.Logger) { g.logger = logger }
+func SetLogger(logger *zap.Logger) {
+	if logger == nil {
+		logger = zap.NewNop()
+	}
+	g.logger = logger
+}
 
 func L() *zap.Logger { return g.logger }
 
@@ -154,10 +159,10 @@ func (l *Level) Set(value string) error {
 func init() {
 	cfg := zapglog.NewGLogDevConfig()
 	cfg.Development = false
+	cfg.EncoderConfig.NameKey = ""
+	cfg.EncoderConfig.TimeKey = "time"
 	cfg.EncoderConfig.MessageKey = "message"
 	cfg.EncoderConfig.LevelKey = "level"
-	cfg.EncoderConfig.TimeKey = "time"
-	cfg.EncoderConfig.NameKey = "logger"
 	cfg.EncoderConfig.CallerKey = "caller"
 	cfg.EncoderConfig.StacktraceKey = "stack"
 	logger, err := cfg.Build()

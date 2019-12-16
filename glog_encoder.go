@@ -170,14 +170,18 @@ func (enc glogEncoder) EncodeEntry(ent zapcore.Entry, fields []zapcore.Field) (*
 	buf.AppendByte(' ')
 	buf.AppendString(ent.Caller.TrimmedPath())
 	buf.AppendString("] ")
+	if len(ent.LoggerName) > 0 && len(enc.NameKey) == 0 {
+		buf.AppendString("[" + ent.LoggerName + "] ")
+	}
 	buf.AppendString(ent.Message)
 
-	if len(fields) > 0 {
+	json, _ := enc.internal.EncodeEntry(ent, fields)
+	str := strings.TrimSpace(json.String())
+	if len(str) > 2 {
 		buf.AppendByte('\t')
-		json, _ := enc.internal.EncodeEntry(ent, fields)
-		buf.AppendString(strings.TrimSpace(json.String()))
-		json.Free()
+		buf.AppendString(str)
 	}
+	json.Free()
 
 	if ent.Stack != "" && enc.StacktraceKey != "" {
 		buf.AppendByte('\n')
