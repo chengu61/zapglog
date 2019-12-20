@@ -15,10 +15,12 @@ func (l *logrLogger) Error(err error, msg string, keysAndValues ...interface{}) 
 }
 
 func (l *logrLogger) Info(msg string, keysAndValues ...interface{}) {
-	l.s.Infow(msg, keysAndValues...)
+	if l.enabled {
+		l.s.Infow(msg, keysAndValues...)
+	}
 }
 
-func (l *logrLogger) Enabled() bool { return true }
+func (l *logrLogger) Enabled() bool { return l.enabled }
 
 func (l *logrLogger) V(level int) logr.InfoLogger {
 	return &logrLogger{int(g.verbosity.get()) >= level, l.s}
